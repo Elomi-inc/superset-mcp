@@ -22,13 +22,19 @@ dependencies = [
     "python-dotenv>=1.0.0",
 ]
 
+[project.scripts]
+superset-mcp = "main:run"
+
 [project.urls]
-Homepage = "https://github.com/yourusername/superset-mcp"
-Issues = "https://github.com/yourusername/superset-mcp/issues"
+Homepage = "https://github.com/Elomi-inc/superset-mcp"
+Issues = "https://github.com/Elomi-inc/superset-mcp/issues"
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["main"]
 
 [tool.black]
 line-length = 88
