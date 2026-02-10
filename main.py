@@ -297,9 +297,13 @@ async def make_api_request(
     async def make_request() -> httpx.Response:
         headers = {}
 
-        # Add CSRF token for non-GET requests
-        if method.lower() != "get" and superset_ctx.csrf_token:
-            headers["X-CSRFToken"] = superset_ctx.csrf_token
+        # Add CSRF token and Referer for non-GET requests
+        # Referer header is required by Superset's CSRF protection
+        if method.lower() != "get":
+            if superset_ctx.csrf_token:
+                headers["X-CSRFToken"] = superset_ctx.csrf_token
+            # Add Referer header - required for Superset CSRF protection
+            headers["Referer"] = superset_ctx.base_url
 
         if method.lower() == "get":
             return await client.get(endpoint, params=params)
@@ -384,7 +388,10 @@ async def superset_auth_refresh_token(ctx: Context) -> Dict[str, Any]:
 
     try:
         # Use the refresh endpoint to get a new token
-        response = await superset_ctx.client.post("/api/v1/security/refresh")
+        response = await superset_ctx.client.post(
+            "/api/v1/security/refresh",
+            headers={"Referer": superset_ctx.base_url}
+        )
 
         if response.status_code != 200:
             return {
@@ -471,6 +478,7 @@ async def superset_auth_authenticate_user(
                 "provider": "db",
                 "refresh": refresh,
             },
+            headers={"Referer": superset_ctx.base_url},
         )
 
         if response.status_code != 200:
